@@ -1,10 +1,12 @@
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -48,7 +50,28 @@ public class Client {
             }finally {
                 workerGroup.shutdownGracefully();
             }
+        HttpRequest request = new DefaultFullHttpRequest(
+                                    HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath(), Unpooled.EMPTY_BUFFER);
+                    request.headers().set(HttpHeaderNames.HOST, host);
+                   request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+                      request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
 
+                    // Set some example cookies.
+                     request.headers().set(
+                                     HttpHeaderNames.COOKIE,
+                                 ClientCookieEncoder.STRICT.encode(
+                                                  new DefaultCookie("my-cookie", "foo"),
+                                             new DefaultCookie("another-cookie", "bar")));
+
+                 // Send the HTTP request.
+                   ch.writeAndFlush(request);
+
+                  // Wait for the server to close the connection.
+                     ch.closeFuture().sync();
+              } finally {
+                   // Shut down executor threads to exit.
+                  group.shutdownGracefully();
+               }
 
     }
 

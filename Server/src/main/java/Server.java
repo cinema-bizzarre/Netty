@@ -7,6 +7,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class Server {
+        private static final int PORT = 8000;
 
     public static void main(String[] args) {
 
@@ -22,7 +23,7 @@ public class Server {
                         socketChannel.pipeline().addLast(new ServerHandler());
                         }
                     });
-            ChannelFuture future = b.bind(8000).sync();
+            ChannelFuture future = b.bind(PORT).sync();
             future.channel().closeFuture().sync();
          }catch (Exception e){
             e.printStackTrace();
